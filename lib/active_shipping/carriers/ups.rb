@@ -551,6 +551,8 @@ module ActiveShipping
             xml.Weight([value.round(3), 0.1].max)
           end
 
+          xml.TotalPackagesInShipment(packages.count)
+
           if packages.any? {|package| package.value.present?}
             xml.InvoiceLineTotal do
               xml.CurrencyCode('USD')
