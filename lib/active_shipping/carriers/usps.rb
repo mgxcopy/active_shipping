@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 module ActiveShipping
   # After getting an API login from USPS (looks like '123YOURNAME456'),
   # run the following test:
@@ -13,6 +11,7 @@ module ActiveShipping
     EventDetails = Struct.new(:description, :time, :zoneless_time, :location, :event_code)
     ONLY_PREFIX_EVENTS = ['DELIVERED','OUT FOR DELIVERY']
     self.retry_safe = true
+    self.ssl_version = :TLSv1_2
 
     cattr_reader :name
     @@name = "USPS"
@@ -233,7 +232,7 @@ module ActiveShipping
     end
 
     def maximum_weight
-      Mass.new(70, :pounds)
+      Measured::Weight.new(70, :pounds)
     end
 
     def extract_event_details(node)
@@ -421,7 +420,7 @@ module ActiveShipping
               xml.Length("%0.2f" % [package.inches(:length), 0.01].max)
               xml.Height("%0.2f" % [package.inches(:height), 0.01].max)
               xml.Girth("%0.2f" % [package.inches(:girth), 0.01].max)
-              xml.OriginZip(origin.zip)
+              xml.OriginZip(strip_zip(origin.zip))
               if commercial_type = commercial_type(options)
                 xml.public_send(COMMERCIAL_FLAG_NAME.fetch(commercial_type), 'Y')
               end
